@@ -8,14 +8,13 @@ export default function WhatIs() {
     <section className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div className="rounded-2xl border border-line bg-surface p-6 shadow-soft sm:p-8">
         <div className="flex flex-col gap-5 sm:flex-row">
-          {/* Drop image 2 here (src="/images/what-is.png") */}
           <div className="w-full shrink-0 sm:w-32">
             <ImagePlaceholder
               label="Illustration"
-              hint="/images/what-is.png"
               ratio="3 / 4"
               rounded="rounded-xl"
-              /* src="/images/what-is.png" */
+              src="/images/what-is.png"
+              alt="What is PDF24X illustration"
             />
           </div>
           <div>
@@ -36,7 +35,6 @@ export default function WhatIs() {
           </div>
         </div>
       </div>
-
       <Newsletter />
     </section>
   );
