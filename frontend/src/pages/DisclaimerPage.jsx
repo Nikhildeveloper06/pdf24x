@@ -1,9 +1,16 @@
+import SEO from "../components/SEO.jsx";
+
 // NOTE: This is generic placeholder legal text, not legal advice.
 // Have an actual lawyer review and customize this before real launch.
 
 export default function DisclaimerPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+      <SEO
+        title="Disclaimer"
+        description="PDF24X's disclaimer covering tool accuracy, third-party links, and the limits of our free online services."
+        path="/disclaimer"
+      />
       <h1 className="font-display text-3xl font-extrabold text-ink sm:text-4xl">
         Disclaimer
       </h1>

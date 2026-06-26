@@ -11,6 +11,7 @@ export default function SearchBar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
   const wrapperRef = useRef(null);
+  const inputRef = useRef(null);
 
   const matches =
     query.trim().length > 0
@@ -19,7 +20,6 @@ export default function SearchBar() {
         )
       : [];
 
-  // Close suggestions when clicking outside the search bar.
   useEffect(() => {
     function handleClickOutside(e) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
@@ -30,8 +30,11 @@ export default function SearchBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // Centralized submit logic — called from form onSubmit (covers Enter/Return
+  // on every OS, since browsers map both to the same "Enter" key event) AND
+  // from the search button's onClick, so both paths are guaranteed to work
+  // even if one is ever blocked by an extension or other interference.
+  const runSearch = () => {
     const trimmed = query.trim();
     if (!trimmed) return;
 
@@ -47,11 +50,27 @@ export default function SearchBar() {
       navigate(`/all-tools?search=${encodeURIComponent(trimmed)}`);
     }
     setShowSuggestions(false);
+    inputRef.current?.blur();
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    runSearch();
+  };
+
+  // Explicit key handler as a guaranteed fallback for Enter/Return,
+  // independent of native form-submit timing.
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      runSearch();
+    }
   };
 
   const handleSuggestionClick = (title) => {
     setQuery(title);
     setShowSuggestions(false);
+    inputRef.current?.focus();
   };
 
   return (
@@ -62,11 +81,13 @@ export default function SearchBar() {
       >
         <Search size={18} className="ml-2 shrink-0 text-sub sm:ml-3" />
         <input
+          ref={inputRef}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
             setShowSuggestions(true);
           }}
+          onKeyDown={handleKeyDown}
           onFocus={() => query && setShowSuggestions(true)}
           placeholder="Search any tool you need..."
           className="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm text-ink outline-none placeholder:text-sub sm:px-3"
@@ -77,6 +98,7 @@ export default function SearchBar() {
             onClick={() => {
               setQuery("");
               setShowSuggestions(false);
+              inputRef.current?.focus();
             }}
             aria-label="Clear search"
             className="shrink-0 p-1.5 text-sub hover:text-ink"
@@ -85,7 +107,8 @@ export default function SearchBar() {
           </button>
         )}
         <button
-          type="submit"
+          type="button"
+          onClick={runSearch}
           className="shrink-0 rounded-lg bg-brand p-2.5 text-white"
           aria-label="Search"
         >

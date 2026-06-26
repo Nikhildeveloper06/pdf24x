@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Flame } from "lucide-react";
+import SEO from "../components/SEO.jsx";
 import { HIGHLY_USED } from "../data/tools.jsx";
 
-// Small color variants per badge type so they read distinctly at a glance.
 const BADGE_STYLES = {
   "#1 Pick": "bg-[#FFE7E3] text-[#EE4B3C]",
   "Trending": "bg-[#ECE7FF] text-[#7B61FF]",
@@ -13,6 +13,11 @@ const BADGE_STYLES = {
 export default function HighlyUsedToolsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <SEO
+        title="Highly Used Tools"
+        description="The most popular free PDF tools on PDF24X — Merge, Compress, Split, PDF to Word and more, ranked by what users reach for first."
+        path="/highly-used-tools"
+      />
       <header className="mb-10 text-center">
         <span className="mx-auto mb-3 inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1 text-xs font-bold text-brand shadow-soft">
           <Flame size={13} />
@@ -34,12 +39,10 @@ export default function HighlyUsedToolsPage() {
             to={tool.path}
             className="group relative flex flex-col rounded-2xl border border-line bg-card p-6 shadow-soft transition-all hover:-translate-y-1.5 hover:shadow-lift"
           >
-            {/* Rank number */}
             <span className="absolute -top-3 -left-3 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-cream text-sm font-extrabold text-ink shadow-soft">
               #{i + 1}
             </span>
 
-            {/* Badge */}
             {tool.badge && (
               <span
                 className={`mb-4 inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-bold ${

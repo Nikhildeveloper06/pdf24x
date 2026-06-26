@@ -1,3 +1,4 @@
+import SEO from "../components/SEO.jsx";
 import Hero from "../components/Hero.jsx";
 import AdSlot from "../components/ui/AdSlot.jsx";
 import CategorySection from "../components/CategorySection.jsx";
@@ -10,6 +11,11 @@ import CtaBanner from "../components/CtaBanner.jsx";
 export default function HomePage() {
   return (
     <>
+      <SEO
+        title="Free Online PDF Tools"
+        description="PDF24X offers 200+ free tools to convert, merge, compress, split and edit PDFs, images and more. No sign up, no installs."
+        path="/"
+      />
       <Hero />
       <AdSlot />
       <CategorySection />

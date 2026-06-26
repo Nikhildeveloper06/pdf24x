@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Calendar, Clock } from "lucide-react";
+import SEO from "../components/SEO.jsx";
 import { BLOG_POSTS } from "../data/blogPosts.jsx";
 import ImagePlaceholder from "../components/ui/ImagePlaceholder.jsx";
 
@@ -21,6 +22,11 @@ function formatDate(iso) {
 export default function BlogsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <SEO
+        title="Blog"
+        description="Tech, AI, and productivity notes from PDF24X — short reads on tools and habits that actually save time."
+        path="/blogs"
+      />
       <header className="mb-10 text-center">
         <h1 className="font-display text-3xl font-extrabold text-ink sm:text-4xl">
           Blog
@@ -38,9 +44,6 @@ export default function BlogsPage() {
             to={`/blog/${post.slug}`}
             className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift"
           >
-            {/* No `src` yet — shows the dashed placeholder until a real
-                image is dropped into public/images/blog/ and `image`
-                in blogPosts.jsx is updated. */}
             <ImagePlaceholder
               label={post.title}
               hint={post.topic}

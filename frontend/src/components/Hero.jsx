@@ -7,7 +7,7 @@ const HERO_WORDS = ["PDF", "Image", "Developers", "Publishers", "Creators"];
 
 export default function Hero() {
   return (
-    <section className="grid grid-cols-1 items-center gap-8 pb-8 pt-10 sm:pt-14 lg:grid-cols-2 lg:gap-10">
+    <section className="grid grid-cols-1 items-center gap-8 pb-8 pt-10 sm:pt-14 md:grid-cols-2 md:gap-10">
       <div>
         <div className="mb-5 flex flex-wrap gap-2">
           {HERO_BADGES.map((b) => (

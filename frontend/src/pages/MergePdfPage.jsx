@@ -1,12 +1,13 @@
 import { useCallback, useState } from "react";
 import { Combine, Loader2, Download, RefreshCcw } from "lucide-react";
+import SEO from "../components/SEO.jsx";
 import ToolPageLayout from "../components/ToolPageLayout.jsx";
 import Dropzone from "../components/ui/Dropzone.jsx";
 import FileListItem from "../components/ui/FileListItem.jsx";
 
 export default function MergePdfPage() {
   const [files, setFiles] = useState([]);
-  const [status, setStatus] = useState("idle"); // idle | merging | done | error
+  const [status, setStatus] = useState("idle");
   const [resultUrl, setResultUrl] = useState(null);
   const [dragIndex, setDragIndex] = useState(null);
 
@@ -58,7 +59,6 @@ export default function MergePdfPage() {
       // setResultUrl(URL.createObjectURL(blob));
       // ------------------------------------------------------------------
 
-      // Placeholder delay so the UI states are visible/demoable pre-backend.
       await new Promise((r) => setTimeout(r, 1200));
       throw new Error("Backend not connected yet");
     } catch (err) {
@@ -76,6 +76,11 @@ export default function MergePdfPage() {
       title="Merge PDF"
       desc="Combine multiple PDF files into one, in whatever order you choose."
     >
+      <SEO
+        title="Merge PDF"
+        description="Combine multiple PDF files into one for free with PDF24X. No sign up, drag and drop, instant download."
+        path="/merge-pdf"
+      />
       {files.length === 0 && (
         <Dropzone
           label="Drop your PDF files here"

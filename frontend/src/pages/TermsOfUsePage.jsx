@@ -1,3 +1,5 @@
+import SEO from "../components/SEO.jsx";
+
 // NOTE: This is generic placeholder legal text, not legal advice.
 // Have an actual lawyer review and customize this before real launch —
 // especially liability limits, governing law, and acceptable-use scope.
@@ -5,6 +7,11 @@
 export default function TermsOfUsePage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+      <SEO
+        title="Terms of Use"
+        description="Read PDF24X's Terms of Use — acceptable use, your files, warranties, and liability for our free PDF tools."
+        path="/terms-of-use"
+      />
       <h1 className="font-display text-3xl font-extrabold text-ink sm:text-4xl">
         Terms of Use
       </h1>

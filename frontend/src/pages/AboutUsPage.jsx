@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Heart, ShieldCheck, Zap, Globe, ArrowRight } from "lucide-react";
+import SEO from "../components/SEO.jsx";
 
 const VALUES = [
   { icon: Heart, color: "#EE4B3C", tint: "#FDE9E6", title: "Built for everyone", desc: "No sign-ups, no paywalls — every tool stays free and open to use." },
@@ -11,7 +12,11 @@ const VALUES = [
 export default function AboutUsPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-      {/* Hero / mission */}
+      <SEO
+        title="About Us"
+        description="Learn why PDF24X exists — free, fast, privacy-first PDF and file tools, with no sign-ups or hidden fees."
+        path="/about"
+      />
       <header className="text-center">
         <span className="mx-auto mb-3 inline-flex items-center rounded-full border border-line bg-card px-3 py-1 text-xs font-bold text-brand shadow-soft">
           About PDF24X
@@ -28,7 +33,6 @@ export default function AboutUsPage() {
         </p>
       </header>
 
-      {/* Why we built this */}
       <section className="mt-14 rounded-2xl border border-line bg-card p-7 shadow-soft sm:p-10">
         <h2 className="font-display text-xl font-extrabold text-ink sm:text-2xl">
           Why we built this
@@ -50,7 +54,6 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* Values / stats grid */}
       <section className="mt-14">
         <h2 className="text-center font-display text-xl font-extrabold text-ink sm:text-2xl">
           What we care about
@@ -74,7 +77,6 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* CTA */}
       <div className="mt-14 text-center">
         <Link
           to="/all-tools"

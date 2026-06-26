@@ -1,3 +1,5 @@
+import SEO from "../components/SEO.jsx";
+
 // NOTE: This is generic placeholder legal text, not legal advice.
 // Have an actual lawyer review and customize this before real launch —
 // especially the data retention, third-party, and jurisdiction sections.
@@ -5,6 +7,11 @@
 export default function PrivacyPolicyPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+      <SEO
+        title="Privacy Policy"
+        description="Read PDF24X's Privacy Policy — how we handle uploaded files, data collection, cookies, and your rights."
+        path="/privacy-policy"
+      />
       <h1 className="font-display text-3xl font-extrabold text-ink sm:text-4xl">
         Privacy Policy
       </h1>
