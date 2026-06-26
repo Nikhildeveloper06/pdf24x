@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Facebook, Twitter, Youtube, Linkedin } from "lucide-react";
 import Logo from "./ui/Logo.jsx";
 import { FOOTER_COLS } from "../data/tools.jsx";
@@ -15,6 +16,7 @@ export default function Footer() {
               Your all-in-one platform for PDF, Image, Video and Developer tools.
             </p>
             <div className="mt-5 flex gap-3">
+              {/* TODO: replace href="#" with your real social media URLs */}
               {SOCIALS.map((Ic, i) => (
                 <a
                   key={i}
@@ -27,23 +29,21 @@ export default function Footer() {
               ))}
             </div>
           </div>
-
           {FOOTER_COLS.map((col) => (
             <div key={col.head}>
               <h4 className="mb-4 text-sm font-bold text-ink">{col.head}</h4>
               <ul className="space-y-2.5">
                 {col.items.map((it) => (
-                  <li key={it}>
-                    <a href="#" className="text-sm text-sub transition-colors hover:text-ink">
-                      {it}
-                    </a>
+                  <li key={it.label}>
+                    <Link to={it.path} className="text-sm text-sub transition-colors hover:text-ink">
+                      {it.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-
         <div className="mt-10 border-t border-line pt-6 text-center text-sm text-sub">
           © 2025 <span className="font-semibold text-ink">PDF24X</span>. All rights reserved.
         </div>

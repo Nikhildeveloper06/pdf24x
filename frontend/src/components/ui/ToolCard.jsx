@@ -1,10 +1,11 @@
+import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
 /** A single tool/category card. `icon` is a swappable icon-placeholder. */
-export default function ToolCard({ icon: Icon, color, tint, title, desc, link }) {
+export default function ToolCard({ icon: Icon, color, tint, title, desc, link, path = "/all-tools" }) {
   return (
-    <a
-      href="#"
+    <Link
+      to={path}
       className="group rounded-2xl border border-line bg-card p-5 text-left shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
     >
       <span
@@ -19,6 +20,6 @@ export default function ToolCard({ icon: Icon, color, tint, title, desc, link })
         {link}
         <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
       </span>
-    </a>
+    </Link>
   );
 }
