@@ -1,6 +1,9 @@
-import { Search } from "lucide-react";
 import ImagePlaceholder from "./ui/ImagePlaceholder.jsx";
+import TypingText from "./ui/TypingText.jsx";
+import SearchBar from "./ui/SearchBar.jsx";
 import { HERO_BADGES, FEATURE_CHIPS } from "../data/tools.jsx";
+
+const HERO_WORDS = ["PDF", "Image", "Developers", "Publishers", "Creators"];
 
 export default function Hero() {
   return (
@@ -20,8 +23,12 @@ export default function Hero() {
 
         <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-5xl lg:text-6xl">
           All-in-One
-          <br />
-          <span className="text-brand">PDF</span> Tools Suite
+        </h1>
+        <div className="text-4xl font-extrabold leading-[1.05] tracking-tight text-brand sm:text-5xl lg:text-6xl">
+          <TypingText words={HERO_WORDS} />
+        </div>
+        <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-5xl lg:text-6xl">
+          Tools Suite
         </h1>
 
         <p className="mt-4 max-w-lg text-base text-sub sm:text-lg">
@@ -29,16 +36,7 @@ export default function Hero() {
           split PDF files and much more.
         </p>
 
-        <div className="mt-6 flex max-w-lg items-center rounded-xl border border-line bg-surface p-1.5 shadow-soft">
-          <Search size={18} className="ml-3 text-sub" />
-          <input
-            placeholder="Search any tool you need..."
-            className="flex-1 bg-transparent px-3 py-2 text-sm text-ink outline-none placeholder:text-sub"
-          />
-          <button className="rounded-lg bg-brand p-2.5 text-white" aria-label="Search">
-            <Search size={18} />
-          </button>
-        </div>
+        <SearchBar />
 
         <div className="mt-5 flex flex-wrap gap-2">
           {FEATURE_CHIPS.map(({ label, icon: Icon }) => (
@@ -52,15 +50,14 @@ export default function Hero() {
           ))}
         </div>
       </div>
-
-      {/* Hero illustration card — drop image 1 here (src="/images/hero.png") */}
+      {/* Hero illustration card — now using the real image. */}
       <div className="rounded-2xl border border-line bg-surface p-6 shadow-soft sm:p-8">
         <ImagePlaceholder
           label="Hero Illustration"
-          hint="Add image → /public/images/hero.png"
           ratio="16 / 11"
           rounded="rounded-xl"
-          /* src="/images/hero.png" */
+          src="/images/hero.png"
+          alt="PDF24X — all-in-one PDF tools illustration"
         />
         <h3 className="mt-6 text-lg font-bold text-ink">Powerful Tools. Simple Interface.</h3>
         <p className="mt-1 text-sm text-sub">

@@ -9,8 +9,11 @@
 // `badge` on HIGHLY_USED is an illustrative ranking label (NOT a
 // real usage stat — no fabricated numbers, since that would mislead
 // visitors). Swap to real data once usage tracking exists.
-// FOOTER_COLS items are now { label, path } so footer links route
+// FOOTER_COLS items are { label, path } so footer links route
 // correctly instead of using dead href="#" anchors.
+//
+// NOTE: "All Tools" was removed from NAV_LINKS since the navbar's
+// "Explore All Tools" CTA button already covers that destination.
 // ============================================================
 import {
   FileText, Image as ImageIcon, Code2, BookOpen, Music, Video,
@@ -20,13 +23,12 @@ import {
 } from "lucide-react";
 
 export const NAV_LINKS = [
-  { label: "All Tools", path: "/all-tools" },
   { label: "Highly Used Tools", path: "/highly-used-tools" },
   { label: "About Us", path: "/about" },
   { label: "Blogs", path: "/blogs" },
   { label: "Privacy Policy", path: "/privacy-policy" },
 ];
-export const NAV_DROPDOWNS = ["All Tools", "Highly Used Tools"];
+export const NAV_DROPDOWNS = ["Highly Used Tools"];
 
 export const HERO_BADGES = ["100% Free", "No Sign Up", "Secure & Private"];
 
