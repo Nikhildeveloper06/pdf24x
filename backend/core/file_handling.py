@@ -67,3 +67,65 @@ def cleanup_paths(*paths: Path) -> None:
                 path.unlink()
         except OSError:
             pass  # best-effort cleanup; don't crash the request over this
+
+
+# ============================================================
+# Session registry for comparison/preview features.
+#
+# Some features (before/after page comparison) need to look at a file
+# again *after* the main request that created it has finished — e.g.
+# the user picks a different page to compare minutes after compressing.
+# Rather than keeping files forever, each registered file gets a
+# session ID and a longer (but still bounded) expiry, after which a
+# background sweep deletes it. This keeps the "files are automatically
+# deleted" privacy promise intact while allowing brief follow-up access.
+# ============================================================
+
+import time
+import threading
+
+_SESSION_REGISTRY: dict[str, dict] = {}
+_SESSION_LOCK = threading.Lock()
+SESSION_TTL_SECONDS = 15 * 60  # 15 minutes — enough for a user to browse pages
+
+
+def register_session_file(path: Path) -> str:
+    """Register a file for short-lived follow-up access. Returns a session ID."""
+    session_id = str(uuid.uuid4())
+    with _SESSION_LOCK:
+        _SESSION_REGISTRY[session_id] = {
+            "path": path,
+            "expires_at": time.time() + SESSION_TTL_SECONDS,
+        }
+    return session_id
+
+
+def get_session_file(session_id: str) -> Path:
+    """Look up a registered file by session ID. Raises 404 if missing/expired."""
+    with _SESSION_LOCK:
+        entry = _SESSION_REGISTRY.get(session_id)
+
+    if not entry or time.time() > entry["expires_at"]:
+        raise HTTPException(
+            status_code=404,
+            detail="This file is no longer available for preview (session expired).",
+        )
+
+    if not entry["path"].exists():
+        raise HTTPException(status_code=404, detail="File not found.")
+
+    return entry["path"]
+
+
+def cleanup_expired_sessions() -> None:
+    """Delete files whose session has expired. Call periodically."""
+    now = time.time()
+    with _SESSION_LOCK:
+        expired_ids = [sid for sid, e in _SESSION_REGISTRY.items() if now > e["expires_at"]]
+        for sid in expired_ids:
+            entry = _SESSION_REGISTRY.pop(sid)
+            try:
+                if entry["path"].exists():
+                    entry["path"].unlink()
+            except OSError:
+                pass

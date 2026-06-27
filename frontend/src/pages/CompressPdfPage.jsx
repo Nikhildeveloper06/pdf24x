@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Minimize2, Loader2, Download, RefreshCcw, FileText, X, Target, SlidersHorizontal, AlertTriangle, Lightbulb } from "lucide-react";
+import { Minimize2, Loader2, Download, RefreshCcw, FileText, X, Target, SlidersHorizontal, AlertTriangle, Lightbulb, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import SEO from "../components/SEO.jsx";
 import ToolPageLayout from "../components/ToolPageLayout.jsx";
 import Dropzone from "../components/ui/Dropzone.jsx";
@@ -24,21 +24,27 @@ function formatBytes(bytes) {
 
 export default function CompressPdfPage() {
   const [file, setFile] = useState(null);
-  const [mode, setMode] = useState("level"); // "level" | "target"
+  const [mode, setMode] = useState("level");
   const [level, setLevel] = useState("medium");
   const [targetValue, setTargetValue] = useState("");
-  const [targetUnit, setTargetUnit] = useState("MB"); // "KB" | "MB"
-  const [status, setStatus] = useState("idle"); // idle | compressing | done | error
+  const [targetUnit, setTargetUnit] = useState("MB");
+  const [status, setStatus] = useState("idle");
   const [resultUrl, setResultUrl] = useState(null);
   const [resultSize, setResultSize] = useState(null);
   const [targetReached, setTargetReached] = useState(true);
-  const [compressionInfo, setCompressionInfo] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Auto-suggestion state — populated by a quick /api/pdf/analyze call
-  // right after a file is selected. Purely a hint; never auto-applies.
   const [analyzing, setAnalyzing] = useState(false);
-  const [suggestion, setSuggestion] = useState(null); // { suggested_level, reason }
+  const [suggestion, setSuggestion] = useState(null);
+
+  // Before/after comparison state
+  const [originalSessionId, setOriginalSessionId] = useState(null);
+  const [compressedSessionId, setCompressedSessionId] = useState(null);
+  const [pageCount, setPageCount] = useState(1);
+  const [comparePage, setComparePage] = useState(1);
+  const [showingCompressed, setShowingCompressed] = useState(true);
+  const [compareImageUrl, setCompareImageUrl] = useState(null);
+  const [compareLoading, setCompareLoading] = useState(false);
 
   const analyzeFile = useCallback(async (pdfFile) => {
     setAnalyzing(true);
@@ -52,8 +58,7 @@ export default function CompressPdfPage() {
         setSuggestion(data);
       }
     } catch {
-      // Analysis is a nice-to-have hint — fail silently rather than
-      // blocking the user from compressing if it doesn't work.
+      // hint only — fail silently
     } finally {
       setAnalyzing(false);
     }
@@ -79,9 +84,34 @@ export default function CompressPdfPage() {
     setResultSize(null);
     setErrorMessage("");
     setTargetReached(true);
-    setCompressionInfo("");
     setSuggestion(null);
+    setOriginalSessionId(null);
+    setCompressedSessionId(null);
+    setPageCount(1);
+    setComparePage(1);
+    setShowingCompressed(true);
+    setCompareImageUrl(null);
   };
+
+  const loadComparePage = useCallback(
+    async (pageNum, showCompressed, origId, compId) => {
+      const sessionId = showCompressed ? compId : origId;
+      if (!sessionId) return;
+      setCompareLoading(true);
+      try {
+        const res = await fetch(`/api/pdf/render-page?session_id=${sessionId}&page=${pageNum}`);
+        if (res.ok) {
+          const blob = await res.blob();
+          setCompareImageUrl(URL.createObjectURL(blob));
+        }
+      } catch {
+        // comparison is a nice-to-have — fail silently
+      } finally {
+        setCompareLoading(false);
+      }
+    },
+    []
+  );
 
   const handleCompress = async () => {
     if (!file) return;
@@ -121,22 +151,46 @@ export default function CompressPdfPage() {
           const data = await res.json();
           detail = data.detail || detail;
         } catch {
-          // not JSON — keep generic message
+          // not JSON
         }
         throw new Error(detail);
       }
 
       const blob = await res.blob();
+      const origId = res.headers.get("X-Original-Session-Id");
+      const compId = res.headers.get("X-Compressed-Session-Id");
+      const pages = parseInt(res.headers.get("X-Page-Count") || "1", 10);
+
       setResultUrl(URL.createObjectURL(blob));
       setResultSize(blob.size);
       setTargetReached(res.headers.get("X-Target-Reached") !== "false");
-      setCompressionInfo(res.headers.get("X-Compression-Info") || "");
+      setOriginalSessionId(origId);
+      setCompressedSessionId(compId);
+      setPageCount(pages);
+      setComparePage(1);
+      setShowingCompressed(true);
       setStatus("done");
+
+      // Load the first comparison image right away.
+      loadComparePage(1, true, origId, compId);
     } catch (err) {
       console.error(err);
       setErrorMessage(err.message || "Something went wrong while compressing.");
       setStatus("error");
     }
+  };
+
+  const toggleCompareView = () => {
+    const next = !showingCompressed;
+    setShowingCompressed(next);
+    loadComparePage(comparePage, next, originalSessionId, compressedSessionId);
+  };
+
+  const changeComparePage = (delta) => {
+    const next = Math.min(pageCount, Math.max(1, comparePage + delta));
+    if (next === comparePage) return;
+    setComparePage(next);
+    loadComparePage(next, showingCompressed, originalSessionId, compressedSessionId);
   };
 
   const savedPercent =
@@ -153,7 +207,7 @@ export default function CompressPdfPage() {
     >
       <SEO
         title="Compress PDF"
-        description="Reduce PDF file size for free with PDF24X. Choose a quality level or target an exact file size. No sign up required."
+        description="Reduce PDF file size for free with PDF24X. Choose a quality level or target an exact file size, with a before/after quality comparison. No sign up required."
         path="/compress-pdf"
       />
 
@@ -190,7 +244,6 @@ export default function CompressPdfPage() {
             </button>
           </div>
 
-          {/* Auto-suggestion hint */}
           {analyzing && (
             <div className="flex items-center gap-2 rounded-xl border border-line bg-cream px-4 py-2.5 text-sm text-sub">
               <Loader2 size={14} className="animate-spin" />
@@ -214,7 +267,6 @@ export default function CompressPdfPage() {
             </button>
           )}
 
-          {/* Mode tabs */}
           <div className="inline-flex rounded-xl border border-line bg-cream p-1">
             <button
               type="button"
@@ -381,15 +433,64 @@ export default function CompressPdfPage() {
               </div>
             </div>
 
+            {/* Before/after visual comparison */}
             <div className="overflow-hidden rounded-2xl border border-line shadow-soft">
-              <div className="border-b border-line bg-cream px-4 py-2 text-xs font-semibold text-sub">
-                Preview
+              <div className="flex items-center justify-between border-b border-line bg-cream px-4 py-2">
+                <span className="text-xs font-semibold text-sub">
+                  {showingCompressed ? "Showing: Compressed" : "Showing: Original"}
+                </span>
+
+                <div className="flex items-center gap-2">
+                  {pageCount > 1 && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => changeComparePage(-1)}
+                        disabled={comparePage <= 1}
+                        aria-label="Previous page"
+                        className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-card text-sub disabled:opacity-40"
+                      >
+                        <ChevronLeft size={14} />
+                      </button>
+                      <span className="text-xs text-sub">
+                        Page {comparePage} / {pageCount}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => changeComparePage(1)}
+                        disabled={comparePage >= pageCount}
+                        aria-label="Next page"
+                        className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-card text-sub disabled:opacity-40"
+                      >
+                        <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={toggleCompareView}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-card px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-brand hover:text-white"
+                  >
+                    <Eye size={13} />
+                    View {showingCompressed ? "Original" : "Compressed"}
+                  </button>
+                </div>
               </div>
-              <iframe
-                src={resultUrl}
-                title="Compressed PDF preview"
-                className="h-[70vh] w-full"
-              />
+
+              <div className="flex h-[60vh] items-center justify-center overflow-y-auto bg-cream p-4">
+                {compareLoading ? (
+                  <Loader2 size={28} className="animate-spin text-sub" />
+                ) : compareImageUrl ? (
+                  <img
+                    src={compareImageUrl}
+                    alt={showingCompressed ? "Compressed page preview" : "Original page preview"}
+                    className="max-h-[65vh] w-auto rounded-lg border border-line shadow-soft"
+                  />
+                ) : (
+                  <p className="text-sm text-sub">Preview unavailable.</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
