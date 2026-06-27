@@ -7,8 +7,9 @@ import FileListItem from "../components/ui/FileListItem.jsx";
 
 export default function MergePdfPage() {
   const [files, setFiles] = useState([]);
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState("idle"); // idle | merging | done | error
   const [resultUrl, setResultUrl] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
   const [dragIndex, setDragIndex] = useState(null);
 
   const addFiles = useCallback((newFiles) => {
@@ -35,36 +36,43 @@ export default function MergePdfPage() {
     setFiles([]);
     setStatus("idle");
     setResultUrl(null);
+    setErrorMessage("");
   };
 
   const handleMerge = async () => {
     if (files.length < 2) return;
     setStatus("merging");
+    setErrorMessage("");
 
     try {
-      // ------------------------------------------------------------------
-      // TODO: wire to the real backend once it exists. Expected contract:
-      //
-      //   POST /api/pdf/merge
-      //   Content-Type: multipart/form-data
-      //   field "files" — repeated, in the order they should be merged
-      //
-      //   Response: 200 OK, body = the merged PDF (application/pdf)
-      //
-      // const formData = new FormData();
-      // files.forEach((f) => formData.append("files", f));
-      // const res = await fetch("/api/pdf/merge", { method: "POST", body: formData });
-      // if (!res.ok) throw new Error("Merge failed");
-      // const blob = await res.blob();
-      // setResultUrl(URL.createObjectURL(blob));
-      // ------------------------------------------------------------------
+      const formData = new FormData();
+      files.forEach((f) => formData.append("files", f));
 
-      await new Promise((r) => setTimeout(r, 1200));
-      throw new Error("Backend not connected yet");
+      const res = await fetch("/api/pdf/merge", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        // FastAPI returns { detail: "..." } on errors — surface that
+        // message when available instead of a generic failure.
+        let detail = "Merge failed.";
+        try {
+          const data = await res.json();
+          detail = data.detail || detail;
+        } catch {
+          // response wasn't JSON — keep the generic message
+        }
+        throw new Error(detail);
+      }
+
+      const blob = await res.blob();
+      setResultUrl(URL.createObjectURL(blob));
+      setStatus("done");
     } catch (err) {
       console.error(err);
+      setErrorMessage(err.message || "Something went wrong while merging.");
       setStatus("error");
-      return;
     }
   };
 
@@ -155,9 +163,7 @@ export default function MergePdfPage() {
 
           {status === "error" && (
             <p className="rounded-xl border border-line bg-redsoft px-4 py-3 text-sm font-medium text-ink">
-              Couldn't merge your files just yet — the processing backend isn't
-              connected in this build. The UI flow above is fully wired and
-              ready for it.
+              {errorMessage}
             </p>
           )}
         </div>
