@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import MergePdfPage from "./pages/MergePdfPage.jsx";
+import CompressPdfPage from "./pages/CompressPdfPage.jsx";
 import AllToolsPage from "./pages/AllToolsPage.jsx";
 import HighlyUsedToolsPage from "./pages/HighlyUsedToolsPage.jsx";
 import AboutUsPage from "./pages/AboutUsPage.jsx";
@@ -17,7 +18,6 @@ import ContactUsPage from "./pages/ContactUsPage.jsx";
 export default function App() {
   const [dark, setDark] = useState(false);
 
-  // Toggle the `dark` class on <html> so the CSS-variable palette switches.
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
@@ -39,10 +39,10 @@ export default function App() {
           <Route path="/disclaimer" element={<DisclaimerPage />} />
           <Route path="/contact-us" element={<ContactUsPage />} />
           <Route path="/merge-pdf" element={<MergePdfPage />} />
+          <Route path="/compress-pdf" element={<CompressPdfPage />} />
 
           {/*
             TODO: add one Route per remaining tool as its page is built, e.g.:
-            <Route path="/compress-pdf" element={<CompressPdfPage />} />
             <Route path="/split-pdf" element={<SplitPdfPage />} />
             <Route path="/pdf-to-word" element={<PdfToWordPage />} />
             ...
