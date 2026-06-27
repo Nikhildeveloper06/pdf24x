@@ -54,8 +54,6 @@ export default function MergePdfPage() {
       });
 
       if (!res.ok) {
-        // FastAPI returns { detail: "..." } on errors — surface that
-        // message when available instead of a generic failure.
         let detail = "Merge failed.";
         try {
           const data = await res.json();
@@ -82,6 +80,7 @@ export default function MergePdfPage() {
       color="#F2994A"
       tint="#FCEEDD"
       title="Merge PDF"
+      wide
       desc="Combine multiple PDF files into one, in whatever order you choose."
     >
       <SEO
@@ -170,29 +169,50 @@ export default function MergePdfPage() {
       )}
 
       {status === "done" && resultUrl && (
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-line bg-card p-10 text-center shadow-soft">
-          <span
-            className="flex h-14 w-14 items-center justify-center rounded-2xl"
-            style={{ background: "#E4F5EC" }}
-          >
-            <Combine size={26} className="text-[#27AE60]" />
-          </span>
-          <p className="text-base font-bold text-ink">Your PDF is ready!</p>
-          <a
-            href={resultUrl}
-            download="merged.pdf"
-            className="inline-flex items-center gap-2 rounded-xl border border-line bg-brand px-5 py-2.5 text-sm font-bold text-white shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-lift"
-          >
-            <Download size={16} />
-            Download merged PDF
-          </a>
-          <button
-            type="button"
-            onClick={reset}
-            className="text-sm font-semibold text-sub transition-colors hover:text-brand"
-          >
-            Merge more files
-          </button>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+          {/* Left: result summary + actions */}
+          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-line bg-card p-8 text-center shadow-soft">
+            <span
+              className="flex h-14 w-14 items-center justify-center rounded-2xl"
+              style={{ background: "#E4F5EC" }}
+            >
+              <Combine size={26} className="text-[#27AE60]" />
+            </span>
+            <p className="text-base font-bold text-ink">Your PDF is ready!</p>
+            <p className="text-sm text-sub">
+              Preview your merged file on the {/* right on desktop, below on mobile */}
+              right before downloading.
+            </p>
+            <div className="flex flex-col items-center gap-3">
+              <a
+                href={resultUrl}
+                download="merged.pdf"
+                className="inline-flex items-center gap-2 rounded-xl border border-line bg-brand px-5 py-2.5 text-sm font-bold text-white shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-lift"
+              >
+                <Download size={16} />
+                Download merged PDF
+              </a>
+              <button
+                type="button"
+                onClick={reset}
+                className="text-sm font-semibold text-sub transition-colors hover:text-brand"
+              >
+                Merge more files
+              </button>
+            </div>
+          </div>
+
+          {/* Right: inline preview, same blob URL used for download */}
+          <div className="overflow-hidden rounded-2xl border border-line shadow-soft">
+            <div className="border-b border-line bg-cream px-4 py-2 text-xs font-semibold text-sub">
+              Preview
+            </div>
+            <iframe
+              src={resultUrl}
+              title="Merged PDF preview"
+              className="h-[70vh] w-full"
+            />
+          </div>
         </div>
       )}
     </ToolPageLayout>

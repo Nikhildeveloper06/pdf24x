@@ -5,10 +5,14 @@ import { ArrowLeft } from "lucide-react";
  * Shared chrome for every tool page: back link + icon badge + title/desc.
  * The actual tool workspace (dropzone, options, results) is passed as
  * `children` and is fully custom per page.
+ *
+ * `wide` opts into a wider container (max-w-7xl instead of max-w-4xl) —
+ * use this for tools with side-by-side layouts (e.g. preview panels)
+ * that need more horizontal room than the default single-column tools.
  */
-export default function ToolPageLayout({ icon: Icon, color, tint, title, desc, children }) {
+export default function ToolPageLayout({ icon: Icon, color, tint, title, desc, wide = false, children }) {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className={`mx-auto px-4 py-10 sm:px-6 lg:px-8 ${wide ? "max-w-7xl" : "max-w-4xl"}`}>
       <Link
         to="/"
         className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-sub transition-colors hover:text-brand"
