@@ -7,6 +7,7 @@ import MergePdfPage from "./pages/MergePdfPage.jsx";
 import CompressPdfPage from "./pages/CompressPdfPage.jsx";
 import SplitPdfPage from "./pages/SplitPdfPage.jsx";
 import PdfToWordPage from "./pages/PdfToWordPage.jsx";
+import PdfToJpgPage from "./pages/PdfToJpgPage.jsx";
 import AllToolsPage from "./pages/AllToolsPage.jsx";
 import HighlyUsedToolsPage from "./pages/HighlyUsedToolsPage.jsx";
 import AboutUsPage from "./pages/AboutUsPage.jsx";
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/compress-pdf" element={<CompressPdfPage />} />
           <Route path="/split-pdf" element={<SplitPdfPage />} />
           <Route path="/pdf-to-word" element={<PdfToWordPage />} />
+          <Route path="/pdf-to-jpg" element={<PdfToJpgPage />} />
 
           {/*
             TODO: add one Route per remaining tool as its page is built.
