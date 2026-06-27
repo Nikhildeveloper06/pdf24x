@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { FileImage, Loader2, Download, RefreshCcw, X } from "lucide-react";
+import JSZip from "jszip";
 import SEO from "../components/SEO.jsx";
 import ToolPageLayout from "../components/ToolPageLayout.jsx";
 import Dropzone from "../components/ui/Dropzone.jsx";
@@ -31,12 +32,17 @@ export default function PdfToJpgPage() {
   const [outputCount, setOutputCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Gallery state — populated for both single-JPG and unzipped multi-page results.
+  const [galleryImages, setGalleryImages] = useState([]); // [{ name, url }]
+  const [unzipping, setUnzipping] = useState(false);
+
   const handleFile = useCallback((newFiles) => {
     const pdf = newFiles.find((f) => f.type === "application/pdf");
     if (pdf) {
       setFile(pdf);
       setStatus("idle");
       setResultUrl(null);
+      setGalleryImages([]);
     }
   }, []);
 
@@ -45,6 +51,31 @@ export default function PdfToJpgPage() {
     setStatus("idle");
     setResultUrl(null);
     setErrorMessage("");
+    setGalleryImages([]);
+  };
+
+  const buildGalleryFromZip = async (blob) => {
+    setUnzipping(true);
+    try {
+      const zip = await JSZip.loadAsync(blob);
+      const entries = Object.values(zip.files)
+        .filter((f) => !f.dir)
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+
+      const images = [];
+      for (const entry of entries) {
+        const imgBlob = await entry.async("blob");
+        images.push({
+          name: entry.name,
+          url: URL.createObjectURL(imgBlob),
+        });
+      }
+      setGalleryImages(images);
+    } catch (err) {
+      console.error("Failed to unzip preview:", err);
+    } finally {
+      setUnzipping(false);
+    }
   };
 
   const handleConvert = async () => {
@@ -82,6 +113,12 @@ export default function PdfToJpgPage() {
       setResultIsZip(isZip);
       setOutputCount(count);
       setStatus("done");
+
+      if (isZip) {
+        buildGalleryFromZip(blob);
+      } else {
+        setGalleryImages([{ name: "page.jpg", url: URL.createObjectURL(blob) }]);
+      }
     } catch (err) {
       console.error(err);
       setErrorMessage(err.message || "Something went wrong while converting.");
@@ -95,11 +132,12 @@ export default function PdfToJpgPage() {
       color="#EC4899"
       tint="#FCE4EF"
       title="PDF to JPG"
+      wide
       desc="Convert every page of your PDF into a JPG image."
     >
       <SEO
         title="PDF to JPG"
-        description="Convert PDF pages to JPG images for free with PDF24X. Choose your quality level. No sign up required."
+        description="Convert PDF pages to JPG images for free with PDF24X. Choose your quality level and preview every page. No sign up required."
         path="/pdf-to-jpg"
       />
 
@@ -195,31 +233,69 @@ export default function PdfToJpgPage() {
       )}
 
       {status === "done" && resultUrl && (
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-line bg-card p-10 text-center shadow-soft">
-          <span
-            className="flex h-14 w-14 items-center justify-center rounded-2xl"
-            style={{ background: "#E4F5EC" }}
-          >
-            <FileImage size={26} className="text-[#27AE60]" />
-          </span>
-          <p className="text-base font-bold text-ink">
-            {outputCount > 1 ? `${outputCount} pages converted!` : "Your JPG is ready!"}
-          </p>
-          <a
-            href={resultUrl}
-            download={resultIsZip ? "pages.zip" : "page.jpg"}
-            className="inline-flex items-center gap-2 rounded-xl border border-line bg-brand px-5 py-2.5 text-sm font-bold text-white shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-lift"
-          >
-            <Download size={16} />
-            Download {resultIsZip ? "ZIP" : "JPG"}
-          </a>
-          <button
-            type="button"
-            onClick={reset}
-            className="text-sm font-semibold text-sub transition-colors hover:text-brand"
-          >
-            Convert another file
-          </button>
+        <div className="space-y-6">
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-line bg-card p-8 text-center shadow-soft">
+            <span
+              className="flex h-14 w-14 items-center justify-center rounded-2xl"
+              style={{ background: "#E4F5EC" }}
+            >
+              <FileImage size={26} className="text-[#27AE60]" />
+            </span>
+            <p className="text-base font-bold text-ink">
+              {outputCount > 1 ? `${outputCount} pages converted!` : "Your JPG is ready!"}
+            </p>
+            <div className="flex flex-col items-center gap-3">
+              <a
+                href={resultUrl}
+                download={resultIsZip ? "pages.zip" : "page.jpg"}
+                className="inline-flex items-center gap-2 rounded-xl border border-line bg-brand px-5 py-2.5 text-sm font-bold text-white shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-lift"
+              >
+                <Download size={16} />
+                Download {resultIsZip ? "all as ZIP" : "JPG"}
+              </a>
+              <button
+                type="button"
+                onClick={reset}
+                className="text-sm font-semibold text-sub transition-colors hover:text-brand"
+              >
+                Convert another file
+              </button>
+            </div>
+          </div>
+
+          {/* Thumbnail gallery — every converted page, with its own download link */}
+          <div>
+            <p className="mb-3 text-sm font-bold text-ink">Preview</p>
+            {unzipping ? (
+              <div className="flex items-center justify-center gap-2 rounded-xl border border-line bg-card p-10 text-sm text-sub">
+                <Loader2 size={16} className="animate-spin" />
+                Preparing preview…
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                {galleryImages.map((img, i) => (
+                  <a
+                    key={img.name}
+                    href={img.url}
+                    download={img.name}
+                    className="group relative overflow-hidden rounded-lg border border-line bg-card shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-lift"
+                  >
+                    <img
+                      src={img.url}
+                      alt={`Page ${i + 1}`}
+                      className="aspect-[3/4] w-full object-cover"
+                    />
+                    <span className="absolute bottom-1 right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-cream/90 px-1 text-[10px] font-bold text-sub">
+                      {i + 1}
+                    </span>
+                    <span className="absolute inset-0 flex items-center justify-center bg-ink/0 opacity-0 transition-opacity group-hover:bg-ink/40 group-hover:opacity-100">
+                      <Download size={18} className="text-white" />
+                    </span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </ToolPageLayout>
