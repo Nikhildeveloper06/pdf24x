@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Minimize2, Loader2, Download, RefreshCcw, FileText, X, Target, SlidersHorizontal, AlertTriangle } from "lucide-react";
+import { Minimize2, Loader2, Download, RefreshCcw, FileText, X, Target, SlidersHorizontal, AlertTriangle, Lightbulb } from "lucide-react";
 import SEO from "../components/SEO.jsx";
 import ToolPageLayout from "../components/ToolPageLayout.jsx";
 import Dropzone from "../components/ui/Dropzone.jsx";
@@ -35,14 +35,42 @@ export default function CompressPdfPage() {
   const [compressionInfo, setCompressionInfo] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleFile = useCallback((newFiles) => {
-    const pdf = newFiles.find((f) => f.type === "application/pdf");
-    if (pdf) {
-      setFile(pdf);
-      setStatus("idle");
-      setResultUrl(null);
+  // Auto-suggestion state — populated by a quick /api/pdf/analyze call
+  // right after a file is selected. Purely a hint; never auto-applies.
+  const [analyzing, setAnalyzing] = useState(false);
+  const [suggestion, setSuggestion] = useState(null); // { suggested_level, reason }
+
+  const analyzeFile = useCallback(async (pdfFile) => {
+    setAnalyzing(true);
+    setSuggestion(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", pdfFile);
+      const res = await fetch("/api/pdf/analyze", { method: "POST", body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        setSuggestion(data);
+      }
+    } catch {
+      // Analysis is a nice-to-have hint — fail silently rather than
+      // blocking the user from compressing if it doesn't work.
+    } finally {
+      setAnalyzing(false);
     }
   }, []);
+
+  const handleFile = useCallback(
+    (newFiles) => {
+      const pdf = newFiles.find((f) => f.type === "application/pdf");
+      if (pdf) {
+        setFile(pdf);
+        setStatus("idle");
+        setResultUrl(null);
+        analyzeFile(pdf);
+      }
+    },
+    [analyzeFile]
+  );
 
   const reset = () => {
     setFile(null);
@@ -52,6 +80,7 @@ export default function CompressPdfPage() {
     setErrorMessage("");
     setTargetReached(true);
     setCompressionInfo("");
+    setSuggestion(null);
   };
 
   const handleCompress = async () => {
@@ -160,6 +189,30 @@ export default function CompressPdfPage() {
               <X size={15} />
             </button>
           </div>
+
+          {/* Auto-suggestion hint */}
+          {analyzing && (
+            <div className="flex items-center gap-2 rounded-xl border border-line bg-cream px-4 py-2.5 text-sm text-sub">
+              <Loader2 size={14} className="animate-spin" />
+              Analyzing your file…
+            </div>
+          )}
+
+          {suggestion && mode === "level" && (
+            <button
+              type="button"
+              onClick={() => setLevel(suggestion.suggested_level)}
+              className="flex w-full items-start gap-3 rounded-xl border border-brand bg-redsoft px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-soft"
+            >
+              <Lightbulb size={18} className="mt-0.5 shrink-0 text-brand" />
+              <span>
+                <span className="text-sm font-bold text-ink">
+                  Suggested: {LEVELS.find((l) => l.id === suggestion.suggested_level)?.label}
+                </span>
+                <span className="block text-xs text-sub">{suggestion.reason}</span>
+              </span>
+            </button>
+          )}
 
           {/* Mode tabs */}
           <div className="inline-flex rounded-xl border border-line bg-cream p-1">

@@ -12,7 +12,7 @@ as more tools get added.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import merge, compress
+from routers import merge, compress, analyze
 
 app = FastAPI(
     title="PDF24X API",
@@ -20,9 +20,6 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# CORS — allows the Vite dev server (and later, your real frontend domain)
-# to call this API from the browser. Without this, the browser blocks
-# cross-origin requests by default.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -36,6 +33,7 @@ app.add_middleware(
 
 app.include_router(merge.router, prefix="/api/pdf", tags=["pdf"])
 app.include_router(compress.router, prefix="/api/pdf", tags=["pdf"])
+app.include_router(analyze.router, prefix="/api/pdf", tags=["pdf"])
 
 
 @app.get("/")
