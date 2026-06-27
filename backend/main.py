@@ -12,7 +12,7 @@ as more tools get added.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import merge, compress, analyze, render
+from routers import merge, compress, analyze, render, split, info
 
 app = FastAPI(
     title="PDF24X API",
@@ -35,6 +35,8 @@ app.include_router(merge.router, prefix="/api/pdf", tags=["pdf"])
 app.include_router(compress.router, prefix="/api/pdf", tags=["pdf"])
 app.include_router(analyze.router, prefix="/api/pdf", tags=["pdf"])
 app.include_router(render.router, prefix="/api/pdf", tags=["pdf"])
+app.include_router(split.router, prefix="/api/pdf", tags=["pdf"])
+app.include_router(info.router, prefix="/api/pdf", tags=["pdf"])
 
 
 @app.get("/")
